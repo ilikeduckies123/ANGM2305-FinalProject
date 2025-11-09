@@ -17,7 +17,7 @@ A short idle clicker game. Will have a gameplay loop that can be played forever.
 #### Once players hit specific milestones play an effect to celebrate, potentially include achievement window.
 
 ## Challenges
-Will need to research how to make an interactible window within Pygame
+Will need to research how to make an interactible window within Pygame \n
 Research how to potentially save data
 
 ## Outcomes
