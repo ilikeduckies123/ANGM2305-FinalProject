@@ -22,76 +22,99 @@ timer = pygame.time.Clock()
 
 # Game Variables
 score = 0
-button_1 = 1
-button_2 = 2
-button_3 = 3
-button_4 = 4
-button_5 = 5
+manager_income_timer = 0
 
 #draw buttons function
-button_1_cost = 1
-button_1_owned = False
-button_1_manager = 100
-button_2_cost = 1
-button_2_owned = False
-button_2_manager = button_1_manager * 3
-button_3_cost = 1
-button_3_owned = False
-button_3_manager = button_2_manager * 3
-button_4_cost = 1
-button_4_owned = False
-button_4_manager = button_3_manager * 3
-button_5_cost = 1
-button_5_owned = False
-button_5_manager = button_4_manager * 4
-
-print (button_5_manager)
-
-def draw_task(color, y_coord, value):
-    global score
-    task = pygame.draw.rect(screen, white, [50, y_coord - 10, 180, 90])
-    value_text = font.render(str(value), True, green)
-    screen.blit(value_text, (135, y_coord + 20))
+buttons = [
+    {"value": 1, "name": 'Button 1', "unlock_cost": 10,
+     "unlocked": True, "manager_cost": 100, "manager_count": 0},
+    {"value": 2, "name": 'Button 2', "unlock_cost": 50,
+     "unlocked": False, "manager_cost": 500, "manager_count": 0},
+    {"value": 5, "name": 'Button 3', "unlock_cost": 100,
+     "unlocked": False, "manager_cost": 1000, "manager_count": 0},
+    {"value": 10, "name": 'Button 4', "unlock_cost": 500,
+     "unlocked": False, "manager_cost": 5000, "manager_count": 0},
+    {"value": 100, "name": 'Button 5', "unlock_cost": 1000,
+     "unlocked": False, "manager_cost": 10000, "manager_count": 0},
+]
+def draw_task(y_coord, btn):
+    if btn["unlocked"]:
+        task = pygame.draw.rect(screen, white, [50, y_coord - 10, 180, 90])
+        value_text = font.render(str(btn["value"]), True, green)
+        screen.blit(value_text, (135, y_coord + 20))
+    else:
+        task = pygame.draw.rect(screen, red, [50, y_coord - 10, 180, 90])
+        value_text = font.render(f"Unlock: {btn['unlock_cost']}", True, white)
+        screen.blit(value_text, (60, y_coord + 20))
     return task
 
-def draw_buttons(color, y_coord, cost, owned, manager_cost):
-    color_button = pygame.draw.rect(screen, color, [100, y_coord, 50, 30])
-    color_cost = font.render(str(round(cost, 2)), True, black)
-    screen.blit(color_cost, (y_coord + 20, 350))
-    if not owned:
-        manager_button = pygame.draw.rect(screen, color, [100, y_coord, 100, 30])
-        manager_text = font.render(str(round(manager_cost, 2)), True, black)
-        screen.blit(manager_text, (y_coord + 20, 400))
+def draw_buttons(color, y_coord, name, manager_cost, manager_count):
+    # Cost Button
+    cost_button = pygame.draw.rect(screen, color, [350, y_coord, 80, 30])
+    name_text = font.render(str(name), True, black)
+    screen.blit(name_text, name_text.get_rect(center=cost_button.center))
 
+    manager_button = pygame.draw.rect(screen, color, [350, y_coord + 40, 120, 30])
+    manager_text = font.render(f"{manager_cost} ({manager_count})", True, black)
+    screen.blit(manager_text, manager_text.get_rect(center=manager_button.center))
+                    
+    return cost_button, manager_button
 
-task_1 = None
-task_2 = None
+task_rects = []
+button_rects = []
+
 
 running = True
 while running:
-    timer.tick(framerate)
+    dt = timer.tick(60) / 1000
+    manager_income_timer += dt
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.MOUSEBUTTONDOWN:
-            if task_1 and task_1.collidepoint(event.pos):
-                score += 1
-            if task_2 and task_2.collidepoint(event.pos):
-                score += 2
+            for i, (_, manager_button) in enumerate(button_rects):
+                if manager_button and manager_button.collidepoint(event.pos):
+                    if score >= buttons[i]["manager_cost"]:
+                        score -= buttons[i]["manager_cost"]
+                        buttons[i]["manager_count"] += 1
+                        buttons[i]["manager_cost"] = int(buttons[i]["manager_cost"] * 1.2)
+
+            for i, task in enumerate(task_rects):
+                if task and task.collidepoint(event.pos):
+                    if buttons[i]["unlocked"]:
+                        score += buttons[i]["value"]
+                    else:
+                        if score >= buttons[i]["unlock_cost"]:
+                            score -= buttons[i]["unlock_cost"]
+                            buttons[i]["unlocked"] = True
+
+    if manager_income_timer >= 0.25:
+        for btn in buttons:
+            if btn["manager_count"] > 0:
+                score += btn["value"] * btn["manager_count"]
+        manager_income_timer = 0
 
     screen.fill(background)
-    task_1 = draw_task(black, 70, button_1)
-    
-    if score >= 30:
-        task_2 = draw_task(black, 170, button_2)
-    else:
-        task_2 = None
 
+    task_rects = []
+    button_rects = []
+    start_y = 70
+    spacing = 140
 
-    
+    for i, btn in enumerate(buttons):
+        y = start_y + i * spacing
+        task_rect = draw_task(y, btn)
+        cost_button, manager_button = draw_buttons(white, y, btn["name"],
+                                                   btn["manager_cost"],
+                                                   btn["manager_count"])
+        task_rects.append(task_rect)
+        button_rects.append((cost_button, manager_button))
 
     display_score = font.render('Money: $'+str(round(score, 2)), True, white, black)
-    screen.blit(display_score, (10, 5))
+    screen.blit(display_score, (47, 15))
+    buy_managers = font.render("Buy Managers:", True, white)
+    screen.blit(buy_managers, (347, 15))
     pygame.display.flip()
 
 pygame.quit()
