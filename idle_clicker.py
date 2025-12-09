@@ -26,35 +26,36 @@ manager_income_timer = 0
 
 #draw buttons function
 buttons = [
-    {"value": 1, "name": 'Button 1', "unlock_cost": 10,
+    {"value": 1, "name": 'Manager 1', "unlock_cost": 10,
      "unlocked": True, "manager_cost": 100, "manager_count": 0},
-    {"value": 2, "name": 'Button 2', "unlock_cost": 50,
+    {"value": 2, "name": 'Manager 2', "unlock_cost": 50,
      "unlocked": False, "manager_cost": 500, "manager_count": 0},
-    {"value": 5, "name": 'Button 3', "unlock_cost": 100,
+    {"value": 5, "name": 'Manager 3', "unlock_cost": 100,
      "unlocked": False, "manager_cost": 1000, "manager_count": 0},
-    {"value": 10, "name": 'Button 4', "unlock_cost": 500,
+    {"value": 10, "name": 'Manager 4', "unlock_cost": 500,
      "unlocked": False, "manager_cost": 5000, "manager_count": 0},
-    {"value": 100, "name": 'Button 5', "unlock_cost": 1000,
+    {"value": 100, "name": 'Manager 5', "unlock_cost": 1000,
      "unlocked": False, "manager_cost": 10000, "manager_count": 0},
 ]
+
 def draw_task(y_coord, btn):
     if btn["unlocked"]:
-        task = pygame.draw.rect(screen, white, [50, y_coord - 10, 180, 90])
+        task = pygame.draw.rect(screen, white, [50, y_coord - 10, 220, 100])
         value_text = font.render(str(btn["value"]), True, green)
         screen.blit(value_text, (135, y_coord + 20))
     else:
-        task = pygame.draw.rect(screen, red, [50, y_coord - 10, 180, 90])
+        task = pygame.draw.rect(screen, red, [50, y_coord - 10, 220, 90])
         value_text = font.render(f"Unlock: {btn['unlock_cost']}", True, white)
         screen.blit(value_text, (60, y_coord + 20))
     return task
 
 def draw_buttons(color, y_coord, name, manager_cost, manager_count):
     # Cost Button
-    cost_button = pygame.draw.rect(screen, color, [350, y_coord, 80, 30])
+    cost_button = pygame.draw.rect(screen, color, [350, y_coord, 180, 40])
     name_text = font.render(str(name), True, black)
     screen.blit(name_text, name_text.get_rect(center=cost_button.center))
 
-    manager_button = pygame.draw.rect(screen, color, [350, y_coord + 40, 120, 30])
+    manager_button = pygame.draw.rect(screen, color, [350, y_coord + 40, 160, 40])
     manager_text = font.render(f"{manager_cost} ({manager_count})", True, black)
     screen.blit(manager_text, manager_text.get_rect(center=manager_button.center))
                     
@@ -62,7 +63,6 @@ def draw_buttons(color, y_coord, name, manager_cost, manager_count):
 
 task_rects = []
 button_rects = []
-
 
 running = True
 while running:
@@ -106,8 +106,8 @@ while running:
         y = start_y + i * spacing
         task_rect = draw_task(y, btn)
         cost_button, manager_button = draw_buttons(white, y, btn["name"],
-                                                   btn["manager_cost"],
-                                                   btn["manager_count"])
+                                                    btn["manager_cost"],
+                                                    btn["manager_count"])
         task_rects.append(task_rect)
         button_rects.append((cost_button, manager_button))
 
